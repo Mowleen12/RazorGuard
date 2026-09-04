@@ -1,77 +1,44 @@
-import { GoogleGenAI } from "@google/genai";
-
 export const config = {
   maxDuration: 30,
   runtime: "nodejs",
 };
 
-function getGeminiClient(): GoogleGenAI | null {
+const CANDIDATE_MODELS = ["gemini-3.6-flash", "gemini-2.5-flash", "gemini-1.5-flash"];
+
+async function callGemini(prompt: string): Promise<{ text: string; modelUsed: string } | null> {
   const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey || apiKey === "MY_GEMINI_API_KEY") {
-    return null;
-  }
-  return new GoogleGenAI({
-    apiKey,
-    httpOptions: {
-      headers: {
-        "User-Agent": "aistudio-build",
-      },
-    },
-  });
-}
+  if (!apiKey || apiKey === "MY_GEMINI_API_KEY") return null;
 
-async function callGeminiSafely(
-  ai: GoogleGenAI,
-  prompt: string
-): Promise<{ text: string; modelUsed: string } | null> {
-  const candidateModels = ["gemini-3.6-flash", "gemini-2.5-flash", "gemini-1.5-flash"];
-  let lastError = "";
-
-  for (const model of candidateModels) {
+  for (const model of CANDIDATE_MODELS) {
     try {
-      console.log(`[RazorGuard AI] Calling model: ${model}`);
-      const response = await ai.models.generateContent({
-        model,
-        contents: prompt,
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0.4, maxOutputTokens: 1024 },
+        }),
+        signal: AbortSignal.timeout(20000),
       });
 
-      let text = "";
-      try {
-        if (typeof response.text === "function") {
-          text = response.text();
-        } else if (typeof response.text === "string") {
-          text = response.text;
-        }
-      } catch (_) {}
-      if (!text && response.candidates && response.candidates[0]?.content?.parts?.[0]?.text) {
-        text = response.candidates[0].content.parts[0].text;
+      if (!res.ok) {
+        const errBody = await res.text().catch(() => "");
+        console.error(`[RazorGuard AI] ${model} HTTP ${res.status}: ${errBody.substring(0, 200)}`);
+        continue;
       }
 
+      const data = await res.json();
+      const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
       if (text && text.trim().length > 0) {
+        console.log(`[RazorGuard AI] Success with ${model}`);
         return { text: text.trim(), modelUsed: model };
       }
-      lastError = `Model ${model} returned empty text`;
     } catch (err: any) {
-      const errMsg = err?.message || String(err);
-      console.error(`[RazorGuard AI] Model ${model} error:`, errMsg);
-      lastError = `${model}: ${errMsg}`;
-
-      const isCapacityOrQuota =
-        errMsg.includes("503") ||
-        errMsg.includes("UNAVAILABLE") ||
-        errMsg.includes("high demand") ||
-        errMsg.includes("429") ||
-        errMsg.includes("RESOURCE_EXHAUSTED");
-
-      if (isCapacityOrQuota) {
-        console.warn(`[RazorGuard AI] Model ${model} unavailable (capacity). Trying fallback...`);
-      } else {
-        console.warn(`[RazorGuard AI] Model ${model} failed: ${errMsg}. Trying next model...`);
-      }
+      console.error(`[RazorGuard AI] ${model} error:`, err?.message || String(err));
     }
   }
-
-  return null; // All models failed
+  return null;
 }
 
 function generateHeuristicQueryAnswer(transaction: any, userQuery: string) {
@@ -112,7 +79,7 @@ function generateHeuristicQueryAnswer(transaction: any, userQuery: string) {
     ];
   } else if (qLower.includes("card") || qLower.includes("bin") || qLower.includes("issuer") || qLower.includes("bank") || qLower.includes("3ds")) {
     answer = `Card instrument ${transaction.cardBrand} •••• ${transaction.cardLast4} (BIN: ${transaction.bin}) issued by ${transaction.issuingBank} (${transaction.issuingCountry}). UPI/3DS Authentication returned "${transaction.threeDsStatus}". ${
-      transaction.threeDsStatus.includes("SUCCESS")
+      transaction.threeDsStatus?.includes("SUCCESS")
         ? "Cryptographic liability shift is active; issuer retains chargeback liability."
         : "Liability shift was not established. Merchant carries 100% financial liability on chargeback dispute."
     }`;
@@ -170,12 +137,13 @@ export default async function handler(req: any, res: any) {
       return res.status(400).json({ error: "Transaction payload is required" });
     }
 
-    const ai = getGeminiClient();
+    const apiKey = process.env.GEMINI_API_KEY;
+    const hasAI = Boolean(apiKey && apiKey !== "MY_GEMINI_API_KEY" && apiKey.length > 10);
 
     if (query && typeof query === "string" && query.trim().length > 0) {
       const userQuery = query.trim();
 
-      if (ai) {
+      if (hasAI) {
         const queryPrompt = `You are RazorGuard AI — a world-class Payment Fraud Forensic Analyst for Indian UPI systems.
 
 ## Transaction Under Investigation
@@ -209,15 +177,12 @@ ${(transaction.evidence || []).map((e: any) => `- [${e.severity.toUpperCase()}] 
 Return ONLY a valid JSON object (no markdown, no code blocks, no extra text) with these fields:
 {"answer": "Your 2-4 sentence forensic analysis with specific numbers and technical details.", "evidenceTags": ["Tag1", "Tag2", "Tag3"], "recommendedAction": "HARD_BLOCK", "confidence": 0.95}`;
 
-        const geminiResult = await callGeminiSafely(ai, queryPrompt);
+        const geminiResult = await callGemini(queryPrompt);
         if (geminiResult) {
           try {
             let jsonStr = geminiResult.text;
             const jsonMatch = jsonStr.match(/\{[\s\S]*\}/);
-            if (jsonMatch) {
-              jsonStr = jsonMatch[0];
-            }
-
+            if (jsonMatch) jsonStr = jsonMatch[0];
             const parsed = JSON.parse(jsonStr);
             return res.status(200).json({
               isLiveAI: true,
@@ -229,7 +194,7 @@ Return ONLY a valid JSON object (no markdown, no code blocks, no extra text) wit
               recommendedAction: parsed.recommendedAction || (transaction.riskScore >= 75 ? "HARD_BLOCK" : "MANUAL_REVIEW"),
               timestamp: new Date().toLocaleTimeString(),
             });
-          } catch (jsonErr) {
+          } catch {
             return res.status(200).json({
               isLiveAI: true,
               modelUsed: geminiResult.modelUsed,
@@ -253,11 +218,11 @@ Return ONLY a valid JSON object (no markdown, no code blocks, no extra text) wit
         confidence: fallback.confidence,
         recommendedAction: fallback.recommendedAction,
         timestamp: new Date().toLocaleTimeString(),
-        notice: ai ? "Delivered via RazorGuard local forensic engine (upstream model at peak demand)." : undefined,
+        notice: hasAI ? "Delivered via RazorGuard local forensic engine (upstream model at peak demand)." : undefined,
       });
     }
 
-    if (ai) {
+    if (hasAI) {
       const prompt = `You are RazorGuard AI — India's premier Payment Fraud Intelligence Platform. Analyze this UPI transaction and produce a comprehensive forensic investigation report.
 
 ## Transaction Details
@@ -288,22 +253,15 @@ ${(transaction.evidence || []).map((e: any) => `- [${e.severity.toUpperCase()}] 
 Return ONLY a valid JSON object (no markdown, no code blocks, no extra text):
 {"summary": "2-3 sentence executive summary.", "hypothesis": "Primary attack vector.", "recommendedAction": "HARD_BLOCK", "confidence": 0.94, "keyRisks": ["Risk 1", "Risk 2", "Risk 3"]}`;
 
-      const geminiResult = await callGeminiSafely(ai, prompt);
+      const geminiResult = await callGemini(prompt);
       if (geminiResult) {
         try {
           let jsonStr = geminiResult.text;
           const jsonMatch = jsonStr.match(/\{[\s\S]*\}/);
-          if (jsonMatch) {
-            jsonStr = jsonMatch[0];
-          }
-
+          if (jsonMatch) jsonStr = jsonMatch[0];
           const parsed = JSON.parse(jsonStr);
-          return res.status(200).json({
-            isLiveAI: true,
-            modelUsed: geminiResult.modelUsed,
-            ...parsed,
-          });
-        } catch (jsonErr) {
+          return res.status(200).json({ isLiveAI: true, modelUsed: geminiResult.modelUsed, ...parsed });
+        } catch {
           console.warn("[RazorGuard AI] Failed to parse synthesis JSON. Using fallback.");
         }
       }
@@ -313,7 +271,7 @@ Return ONLY a valid JSON object (no markdown, no code blocks, no extra text):
     return res.status(200).json({
       isLiveAI: false,
       ...fallbackSynthesis,
-      notice: ai ? "Delivered via RazorGuard local forensic engine (upstream model at peak demand)." : undefined,
+      notice: hasAI ? "Delivered via RazorGuard local forensic engine (upstream model at peak demand)." : undefined,
     });
   } catch (err: any) {
     console.error("[RazorGuard AI] Investigation error:", err?.message || err);
@@ -331,9 +289,6 @@ Return ONLY a valid JSON object (no markdown, no code blocks, no extra text):
       });
     }
     const safeTx = transaction || { id: "unknown", flags: [], riskScore: 50 };
-    return res.status(200).json({
-      isLiveAI: false,
-      ...generateHeuristicSynthesis(safeTx),
-    });
+    return res.status(200).json({ isLiveAI: false, ...generateHeuristicSynthesis(safeTx) });
   }
 }
