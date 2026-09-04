@@ -24,7 +24,7 @@ async function callGeminiSafely(
   ai: GoogleGenAI,
   prompt: string
 ): Promise<{ text: string; modelUsed: string } | null> {
-  const candidateModels = ["gemini-3.6-flash", "gemini-2.5-flash", "gemini-2.0-flash"];
+  const candidateModels = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"];
 
   for (const model of candidateModels) {
     try {
@@ -55,8 +55,10 @@ async function callGeminiSafely(
         errMsg.includes("429") ||
         errMsg.includes("RESOURCE_EXHAUSTED");
 
-      if (!isCapacityOrQuota) {
-        break;
+      if (isCapacityOrQuota) {
+        console.warn(`[RazorGuard AI] Model ${model} unavailable (capacity). Trying fallback...`);
+      } else {
+        console.warn(`[RazorGuard AI] Model ${model} failed: ${errMsg}. Trying next model...`);
       }
     }
   }
