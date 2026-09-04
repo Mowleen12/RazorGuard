@@ -55,6 +55,9 @@ RazorGuard is a full-stack AI-powered payment risk intelligence platform that mo
 
 ```
 razorguard/
+├── api/                                # Vercel serverless functions
+│   ├── investigate.ts                  # AI investigation endpoint
+│   └── health.ts                       # Health check endpoint
 ├── public/
 │   └── data/
 │       └── upi_transactions_2024.csv   # Runtime CSV dataset
@@ -84,6 +87,7 @@ razorguard/
 │   ├── index.css                       # Global styles + Tailwind
 │   └── main.tsx                        # React entry point
 ├── server.ts                           # Express server + Gemini AI
+├── vercel.json                         # Vercel deployment config
 ├── .env                                # API keys (gitignored)
 ├── vite.config.ts                      # Vite configuration
 ├── tailwind.config.ts                  # Tailwind configuration
@@ -136,6 +140,20 @@ The app starts on `http://localhost:3000` (Vite dev server proxied through Expre
 npm run build
 npm run start
 ```
+
+### Deploy to Vercel
+
+RazorGuard is fully compatible with Vercel. The backend is pre-configured as serverless functions.
+
+1. Push your code to GitHub
+2. Go to [vercel.com/new](https://vercel.com/new) and import your repository
+3. Vercel will auto-detect the Vite framework
+4. Add the environment variable:
+   - **Key:** `GEMINI_API_KEY`
+   - **Value:** `AIzaSyBsW4xLM1bqrfLRDvxCLl0ZpO9cqUgWrho`
+5. Click **Deploy**
+
+The API endpoints (`/api/investigate`, `/api/health`) will be deployed as Vercel serverless functions automatically.
 
 ---
 
