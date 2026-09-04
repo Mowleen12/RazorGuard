@@ -205,24 +205,48 @@ At runtime, the first **200 rows** are sampled for dashboard display and AI anal
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────┐
-│                  Browser                     │
-│  ┌───────────────────────────────────────┐   │
-│  │         React + Vite (SPA)            │   │
-│  │  Hero → Dashboard → Investigator      │   │
-│  └──────────────┬────────────────────────┘   │
-│                 │ HTTP                       │
-└─────────────────┼───────────────────────────┘
-                  │
-┌─────────────────▼───────────────────────────┐
-│         Express Server (server.ts)           │
-│  ┌─────────────────────────────────────┐     │
-│  │  POST /api/analyze                  │     │
-│  │  → Gemini AI (gemini-3.6-flash)     │     │
-│  │  → Structured JSON response         │     │
-│  └─────────────────────────────────────┘     │
-└─────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────┐
+│                      Vercel Edge Network                │
+│                                                         │
+│  ┌──────────────────────────┐  ┌─────────────────────┐  │
+│  │   Static Frontend (CDN)  │  │  Serverless Functions│  │
+│  │   React + Vite + Tailwind│  │  (Node.js Runtime)   │  │
+│  │                          │  │                      │  │
+│  │  ┌────────────────────┐  │  │  /api/investigate    │  │
+│  │  │    Landing Page     │  │  │  ├── Gemini 3.6     │  │
+│  │  │    Dashboard        │  │  │  │   Flash (primary) │  │
+│  │  │    Investigator     │──┼──│  ├── Gemini 2.5     │  │
+│  │  │    User Profile     │  │  │  │   Flash (fallback)│  │
+│  │  └────────────────────┘  │  │  └── Gemini 1.5     │  │
+│  │                          │  │      Flash (fallback)│  │
+│  │  Static Assets:          │  │                      │  │
+│  │  • index.html            │  │  /api/health         │  │
+│  │  • CSS + JS bundles      │  │  └── Health check    │  │
+│  │  • CSV dataset (200 rows)│  │                      │  │
+│  └──────────────────────────┘  └─────────────────────┘  │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
+                          │
+                          ▼
+              ┌──────────────────────┐
+              │   Google Gemini API  │
+              │   gemini-3.6-flash   │
+              │   (Fraud Analyst AI) │
+              └──────────────────────┘
 ```
+
+### Request Flow
+
+1. **Browser** loads static React SPA from Vercel CDN
+2. **User** interacts with Dashboard / Investigator workspace
+3. **Frontend** sends POST `/api/investigate` with transaction data
+4. **Vercel Serverless Function** processes request:
+   - Initializes Gemini AI client with API key
+   - Sends forensic analysis prompt to `gemini-3.6-flash`
+   - Falls back to `gemini-2.5-flash` → `gemini-1.5-flash` on failure
+   - Falls back to local heuristic engine if all models fail
+5. **Response** returned as structured JSON to the frontend
+6. **Frontend** renders AI analysis with SHAP attribution tags
 
 ---
 
