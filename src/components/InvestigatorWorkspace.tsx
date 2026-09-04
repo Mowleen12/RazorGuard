@@ -113,14 +113,36 @@ export const InvestigatorWorkspace: React.FC<InvestigatorWorkspaceProps> = ({
       });
 
       const data = await response.json();
+      
+      let answerText = data.answer || data.summary || `Forensic evaluation: Transaction TX-${transaction.id} exhibits risk score ${transaction.riskScore}/100. Key signal is "${transaction.primaryFlag}". Buyer IP originates from ${transaction.ipCountry} with velocity of ${transaction.velocityLastHour} attempts/hr.`;
+      
+      // Unwrap double-encoded JSON answers from Gemini
+      if (typeof answerText === 'string' && answerText.trimStart().startsWith('{')) {
+        try {
+          const parsed = JSON.parse(answerText);
+          if (parsed.answer) answerText = parsed.answer;
+        } catch {}
+      }
+      
+      let evidenceTags = data.evidenceTags || [
+        `Score: ${transaction.riskScore}/100`,
+        `Flag: ${transaction.primaryFlag || 'Telemetry anomaly'}`
+      ];
+      
+      if (typeof data.answer === 'string' && data.answer.trimStart().startsWith('{')) {
+        try {
+          const parsed = JSON.parse(data.answer);
+          if (parsed.evidenceTags) evidenceTags = parsed.evidenceTags;
+          if (parsed.recommendedAction) data.recommendedAction = data.recommendedAction || parsed.recommendedAction;
+          if (parsed.confidence) data.confidence = data.confidence || parsed.confidence;
+        } catch {}
+      }
+
       const newRecord: QueryRecord = {
         id: `q-${Date.now()}`,
         query: q,
-        answer: data.answer || data.summary || `Forensic evaluation: Transaction TX-${transaction.id} exhibits risk score ${transaction.riskScore}/100. Key signal is "${transaction.primaryFlag}". Buyer IP originates from ${transaction.ipCountry} with velocity of ${transaction.velocityLastHour} attempts/hr.`,
-        evidenceTags: data.evidenceTags || [
-          `Score: ${transaction.riskScore}/100`,
-          `Flag: ${transaction.primaryFlag || 'Telemetry anomaly'}`
-        ],
+        answer: answerText,
+        evidenceTags,
         confidence: data.confidence || 0.95,
         recommendedAction: data.recommendedAction || transaction.recommendedAction,
         timestamp: data.timestamp || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
