@@ -99,12 +99,6 @@ razorguard/
 
 ## Getting Started
 
-### Prerequisites
-
-- **Node.js** 18+ (recommended: 20+)
-- **npm** or **yarn**
-- **Google Gemini API key** — Get one at [aistudio.google.com](https://aistudio.google.com/apikey)
-
 ### Installation
 
 ```bash
