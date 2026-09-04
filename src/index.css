@@ -1,0 +1,164 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-main: #020202;
+    --bg-surface: #060913;
+    --bg-surface-elevated: #0d1224;
+    --accent-electric: #0091F5;
+    --accent-purple: #8b5cf6;
+    --accent-pink: #ec4899;
+  }
+
+  body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: #020202;
+    color: #f8fafc;
+    overflow-x: hidden;
+    margin: 0;
+    padding: 0;
+  }
+}
+
+/* Custom styling for sleek dark fintech aesthetics */
+.font-display {
+  font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Unique Non-Robotic Typography System for All Pages Except Title Page (Dashboard & Investigator) */
+.font-workspace {
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  letter-spacing: -0.01em;
+}
+
+/* Unique sculpted display typography for workspace titles & section headings */
+.font-workspace h1,
+.font-workspace h2,
+.font-workspace h3,
+.font-workspace h4,
+.font-workspace .workspace-heading,
+.font-workspace-display {
+  font-family: 'Syne', -apple-system, BlinkMacSystemFont, sans-serif;
+  letter-spacing: -0.015em;
+  font-weight: 700;
+}
+
+/* Transform robotic monospace into elegant, human tabular typography */
+.font-workspace .font-mono,
+.font-workspace code,
+.font-workspace kbd,
+.font-workspace table,
+.font-workspace th,
+.font-workspace td {
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif !important;
+  font-feature-settings: 'tnum' 1, 'lnum' 1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+/* Metallic and holographic card styling */
+.holographic-gradient {
+  background: linear-gradient(135deg, rgba(0, 145, 245, 0.45) 0%, rgba(139, 92, 246, 0.4) 40%, rgba(236, 72, 153, 0.35) 75%, rgba(0, 212, 255, 0.3) 100%);
+  background-size: 200% 200%;
+}
+
+.card-shine {
+  background: radial-gradient(circle at 25% 20%, rgba(255, 255, 255, 0.32), transparent 45%),
+              linear-gradient(125deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0) 55%),
+              radial-gradient(circle at 80% 80%, rgba(157, 124, 255, 0.2), transparent 50%);
+}
+
+.card-foil-sheen {
+  background: linear-gradient(
+    115deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.05) 30%,
+    rgba(255, 255, 255, 0.25) 45%,
+    rgba(157, 124, 255, 0.35) 50%,
+    rgba(0, 212, 255, 0.25) 55%,
+    rgba(255, 255, 255, 0.05) 70%,
+    transparent 100%
+  );
+  background-size: 200% 200%;
+}
+
+/* Realistic embossed credit card numbers with metallic highlight & drop shadow */
+.embossed-card-number {
+  font-family: 'Space Grotesk', monospace, sans-serif;
+  color: #f8fafc;
+  text-shadow: 
+    0 -1px 1px rgba(255, 255, 255, 0.7),
+    0 1px 2px rgba(0, 0, 0, 0.9),
+    0 2px 5px rgba(0, 0, 0, 0.6);
+  letter-spacing: 0.18em;
+}
+
+.embossed-card-meta {
+  color: #e2e8f0;
+  text-shadow: 0 -0.5px 0.5px rgba(255, 255, 255, 0.5), 0 1px 2px rgba(0, 0, 0, 0.8);
+  letter-spacing: 0.12em;
+}
+
+.chip-gold {
+  background: linear-gradient(135deg, #fce08a 0%, #d4af37 35%, #aa8212 70%, #fdf0a6 100%);
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.8), 0 2px 6px rgba(0, 0, 0, 0.5);
+}
+
+.holo-card-border {
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 
+    inset 0 1px 1px rgba(255, 255, 255, 0.4),
+    0 25px 60px -10px rgba(0, 0, 0, 0.85),
+    0 0 30px -5px rgba(139, 92, 246, 0.3);
+}
+
+.laser-wire {
+  filter: drop-shadow(0 0 12px rgba(236, 72, 153, 0.8)) drop-shadow(0 0 24px rgba(139, 92, 246, 0.5));
+}
+
+.electric-glow {
+  box-shadow: 0 0 35px -5px rgba(0, 145, 245, 0.35);
+}
+
+.purple-glow {
+  box-shadow: 0 0 40px -8px rgba(139, 92, 246, 0.3);
+}
+
+.risk-critical-glow {
+  box-shadow: 0 0 30px -5px rgba(239, 68, 68, 0.35);
+}
+
+.risk-safe-glow {
+  box-shadow: 0 0 30px -5px rgba(16, 185, 129, 0.3);
+}
+
+/* Thin geometric hatch pattern for dark mode wireframe feel */
+.bg-grid-wire {
+  background-size: 36px 36px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+}
+
+.bg-radial-vignette {
+  background: radial-gradient(circle at 50% 15%, rgba(0, 145, 245, 0.08) 0%, rgba(139, 92, 246, 0.04) 40%, rgba(2, 2, 2, 0.95) 85%);
+}
+
+/* Custom minimal scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #060913;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}

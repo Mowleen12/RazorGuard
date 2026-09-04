@@ -1,0 +1,103 @@
+<svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="200" height="200" rx="40" fill="#020202" />
+  
+  <defs>
+    <radialGradient id="favGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#9d7cff" stop-opacity="0.4" />
+      <stop offset="100%" stop-color="#020202" stop-opacity="0" />
+    </radialGradient>
+
+    <linearGradient id="shieldGrad" x1="40" y1="20" x2="160" y2="180" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="60%" stop-color="#F1F5F9" />
+      <stop offset="100%" stop-color="#E2E8F0" />
+    </linearGradient>
+
+    <linearGradient id="razorGrad" x1="20" y1="45" x2="175" y2="170" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="50%" stop-color="#FFFFFF" />
+      <stop offset="85%" stop-color="#CBD5E1" />
+      <stop offset="100%" stop-color="#94A3B8" />
+    </linearGradient>
+  </defs>
+
+  <circle cx="100" cy="100" r="80" fill="url(#favGlow)" />
+
+  <!-- Shield Outline with razor cutouts -->
+  <path
+    d="M 100 25
+       L 160 38
+       C 166 65, 168 96, 165 118
+       C 160 144, 138 168, 100 182
+       C 74 172, 54 154, 44 135"
+    stroke="url(#shieldGrad)"
+    stroke-width="7"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+
+  <path
+    d="M 100 25
+       L 64 33
+       L 48 37"
+    stroke="url(#shieldGrad)"
+    stroke-width="7"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+
+  <path
+    d="M 37 92
+       C 38 108, 40 122, 44 135"
+    stroke="url(#shieldGrad)"
+    stroke-width="7"
+    stroke-linecap="round"
+  />
+
+  <!-- 'R' Monogram -->
+  <path
+    d="M 80 60
+       L 126 60
+       C 142 60, 150 70, 150 82
+       C 150 94, 140 102, 126 102
+       L 112 102"
+    stroke="#FFFFFF"
+    stroke-width="7"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <path
+    d="M 80 60
+       L 80 82"
+    stroke="#FFFFFF"
+    stroke-width="7"
+    stroke-linecap="round"
+  />
+
+  <!-- 3 Rising Telemetry Signal Bars -->
+  <rect x="68" y="126" width="6" height="14" rx="3" fill="#FFFFFF" />
+  <rect x="78" y="118" width="6" height="22" rx="3" fill="#FFFFFF" />
+  <rect x="88" y="110" width="6" height="30" rx="3" fill="#FFFFFF" />
+
+  <!-- Razor Slash Cutout Background -->
+  <path
+    d="M 20 44
+       L 174 170
+       L 148 156
+       L 52 74
+       Z"
+    fill="#020202"
+  />
+
+  <!-- Razor Blade Body -->
+  <path
+    d="M 18 44
+       L 176 172
+       L 146 156
+       L 48 76
+       Z"
+    fill="url(#razorGrad)"
+  />
+
+  <line x1="22" y1="46" x2="172" y2="169" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" />
+</svg>

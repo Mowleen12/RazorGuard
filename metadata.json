@@ -1,0 +1,6 @@
+{
+  "name": "RazorGuard - AI Payment Risk Intelligence",
+  "description": "Autonomous AI-powered payment risk intelligence platform that detects suspicious transactions, calculates explainable risk scores, and empowers fraud analysts with structured investigation workspaces.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

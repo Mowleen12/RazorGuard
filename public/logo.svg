@@ -1,0 +1,128 @@
+<svg viewBox="0 0 400 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="320" fill="#020202" />
+  
+  <defs>
+    <radialGradient id="purpleGlow" cx="50%" cy="40%" r="50%">
+      <stop offset="0%" stop-color="#9d7cff" stop-opacity="0.3" />
+      <stop offset="60%" stop-color="#0091f5" stop-opacity="0.1" />
+      <stop offset="100%" stop-color="#020202" stop-opacity="0" />
+    </radialGradient>
+
+    <linearGradient id="shieldGrad" x1="140" y1="20" x2="260" y2="180" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="60%" stop-color="#F1F5F9" />
+      <stop offset="100%" stop-color="#E2E8F0" />
+    </linearGradient>
+
+    <linearGradient id="razorGrad" x1="120" y1="45" x2="275" y2="170" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="50%" stop-color="#FFFFFF" />
+      <stop offset="85%" stop-color="#CBD5E1" />
+      <stop offset="100%" stop-color="#94A3B8" />
+    </linearGradient>
+  </defs>
+
+  <!-- Ambient background glow -->
+  <circle cx="200" cy="110" r="90" fill="url(#purpleGlow)" />
+
+  <!-- Shield Outline with razor cutouts -->
+  <g transform="translate(100, 10)">
+    <!-- Right side & bottom of shield -->
+    <path
+      d="M 100 25
+         L 160 38
+         C 166 65, 168 96, 165 118
+         C 160 144, 138 168, 100 182
+         C 74 172, 54 154, 44 135"
+      stroke="url(#shieldGrad)"
+      stroke-width="6"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+
+    <!-- Top-left crest segment -->
+    <path
+      d="M 100 25
+         L 64 33
+         L 48 37"
+      stroke="url(#shieldGrad)"
+      stroke-width="6"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+
+    <!-- Left side segment below the razor slash -->
+    <path
+      d="M 37 92
+         C 38 108, 40 122, 44 135"
+      stroke="url(#shieldGrad)"
+      stroke-width="6"
+      stroke-linecap="round"
+    />
+
+    <!-- 'R' Monogram inside the shield -->
+    <path
+      d="M 80 60
+         L 126 60
+         C 142 60, 150 70, 150 82
+         C 150 94, 140 102, 126 102
+         L 112 102"
+      stroke="#FFFFFF"
+      stroke-width="6"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <path
+      d="M 80 60
+         L 80 82"
+      stroke="#FFFFFF"
+      stroke-width="6"
+      stroke-linecap="round"
+    />
+
+    <!-- 3 Rising Telemetry Signal Bars -->
+    <rect x="68" y="126" width="5" height="14" rx="2.5" fill="#FFFFFF" />
+    <rect x="77" y="118" width="5" height="22" rx="2.5" fill="#FFFFFF" />
+    <rect x="86" y="110" width="5" height="30" rx="2.5" fill="#FFFFFF" />
+
+    <!-- Razor Slash Cutout Background -->
+    <path
+      d="M 20 44
+         L 174 170
+         L 148 156
+         L 52 74
+         Z"
+      fill="#020202"
+    />
+
+    <!-- Razor Blade Body -->
+    <path
+      d="M 18 44
+         L 176 172
+         L 146 156
+         L 48 76
+         Z"
+      fill="url(#razorGrad)"
+    />
+
+    <!-- Razor Blade Ridge Line -->
+    <line x1="22" y1="46" x2="172" y2="169" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round" />
+  </g>
+
+  <!-- Typography -->
+  <text x="200" y="240" text-anchor="middle" font-family="'Space Grotesk', -apple-system, sans-serif" font-weight="800" font-size="24" letter-spacing="9">
+    <tspan fill="#FFFFFF">RAZOR</tspan><tspan fill="#9D7CFF"> GUɅRD</tspan>
+  </text>
+
+  <!-- Tagline -->
+  <text x="200" y="268" text-anchor="middle" font-family="'Space Grotesk', monospace, sans-serif" font-weight="500" font-size="8.5" fill="#94A3B8" letter-spacing="4">
+    DETECT RISK. EXPLAIN CLEARLY. PROTECT CONFIDENTLY.
+  </text>
+
+  <!-- Insignia Divider -->
+  <g transform="translate(130, 286)">
+    <line x1="0" y1="6" x2="55" y2="6" stroke="#475569" stroke-width="0.8" />
+    <path d="M 70 0 L 75 2.5 C 75 7 73.5 10 70 12 C 66.5 10 65 7 65 2.5 L 70 0 Z" stroke="#9D7CFF" stroke-width="1.2" fill="none" />
+    <line x1="85" y1="6" x2="140" y2="6" stroke="#475569" stroke-width="0.8" />
+  </g>
+</svg>
