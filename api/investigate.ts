@@ -24,7 +24,7 @@ async function callGeminiSafely(
   ai: GoogleGenAI,
   prompt: string
 ): Promise<{ text: string; modelUsed: string } | null> {
-  const candidateModels = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"];
+  const candidateModels = ["gemini-3.6-flash", "gemini-2.5-flash", "gemini-1.5-flash"];
   let lastError = "";
 
   for (const model of candidateModels) {
@@ -36,9 +36,14 @@ async function callGeminiSafely(
       });
 
       let text = "";
-      if (typeof response.text === "string") {
-        text = response.text;
-      } else if (response.candidates && response.candidates[0]?.content?.parts?.[0]?.text) {
+      try {
+        if (typeof response.text === "function") {
+          text = response.text();
+        } else if (typeof response.text === "string") {
+          text = response.text;
+        }
+      } catch (_) {}
+      if (!text && response.candidates && response.candidates[0]?.content?.parts?.[0]?.text) {
         text = response.candidates[0].content.parts[0].text;
       }
 

@@ -33,7 +33,7 @@ async function callGeminiSafely(
   prompt: string
 ): Promise<{ text: string; modelUsed: string } | null> {
   // Try stable Gemini Flash models in sequence
-  const candidateModels = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"];
+  const candidateModels = ["gemini-3.6-flash", "gemini-2.5-flash", "gemini-1.5-flash"];
 
   for (const model of candidateModels) {
     try {
@@ -45,11 +45,15 @@ async function callGeminiSafely(
 
       console.log(`[RazorGuard AI] Response received from ${model}`);
 
-      // Extract text from response - handle different response structures
       let text = "";
-      if (typeof response.text === "string") {
-        text = response.text;
-      } else if (response.candidates && response.candidates[0]?.content?.parts?.[0]?.text) {
+      try {
+        if (typeof response.text === "function") {
+          text = response.text();
+        } else if (typeof response.text === "string") {
+          text = response.text;
+        }
+      } catch (_) {}
+      if (!text && response.candidates && response.candidates[0]?.content?.parts?.[0]?.text) {
         text = response.candidates[0].content.parts[0].text;
       }
 
