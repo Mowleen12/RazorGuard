@@ -184,11 +184,15 @@ Return ONLY a valid JSON object (no markdown, no code blocks, no extra text) wit
             const jsonMatch = jsonStr.match(/\{[\s\S]*\}/);
             if (jsonMatch) jsonStr = jsonMatch[0];
             const parsed = JSON.parse(jsonStr);
+            let answer = parsed.answer || "Query processed successfully.";
+            if (typeof answer === "string" && answer.startsWith("{")) {
+              try { answer = JSON.parse(answer).answer || answer; } catch {}
+            }
             return res.status(200).json({
               isLiveAI: true,
               modelUsed: geminiResult.modelUsed,
               query: userQuery,
-              answer: parsed.answer || "Query processed successfully.",
+              answer,
               evidenceTags: parsed.evidenceTags || [],
               confidence: parsed.confidence || 0.95,
               recommendedAction: parsed.recommendedAction || (transaction.riskScore >= 75 ? "HARD_BLOCK" : "MANUAL_REVIEW"),
