@@ -17,7 +17,7 @@ async function callGemini(prompt: string): Promise<{ text: string; modelUsed: st
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.4, maxOutputTokens: 1024 },
+          generationConfig: { temperature: 0.4, maxOutputTokens: 4096 },
         }),
         signal: AbortSignal.timeout(20000),
       });
@@ -185,9 +185,22 @@ Return ONLY a valid JSON object (no markdown, no code blocks, no extra text) wit
             if (jsonMatch) jsonStr = jsonMatch[0];
             const parsed = JSON.parse(jsonStr);
             let answer = parsed.answer || "Query processed successfully.";
-            if (typeof answer === "string" && answer.startsWith("{")) {
-              try { answer = JSON.parse(answer).answer || answer; } catch {}
+            
+            // Unwrap double-encoded JSON answers from Gemini
+            if (typeof answer === "string" && answer.trimStart().startsWith("{")) {
+              try {
+                const innerParsed = JSON.parse(answer);
+                if (innerParsed.answer) answer = innerParsed.answer;
+                if (innerParsed.evidenceTags && !parsed.evidenceTags) parsed.evidenceTags = innerParsed.evidenceTags;
+                if (innerParsed.recommendedAction && !parsed.recommendedAction) parsed.recommendedAction = innerParsed.recommendedAction;
+                if (innerParsed.confidence && !parsed.confidence) parsed.confidence = innerParsed.confidence;
+              } catch {
+                // Truncated JSON — strip leading {"answer": and trailing chars
+                const innerMatch = answer.match(/"answer"\s*:\s*"([\s\S]+?)"?\s*[,\}]/);
+                if (innerMatch) answer = innerMatch[1].replace(/\\"/g, '"');
+              }
             }
+            
             return res.status(200).json({
               isLiveAI: true,
               modelUsed: geminiResult.modelUsed,
