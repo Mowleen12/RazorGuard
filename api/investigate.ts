@@ -25,6 +25,7 @@ async function callGeminiSafely(
   prompt: string
 ): Promise<{ text: string; modelUsed: string } | null> {
   const candidateModels = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"];
+  let lastError = "";
 
   for (const model of candidateModels) {
     try {
@@ -44,9 +45,11 @@ async function callGeminiSafely(
       if (text && text.trim().length > 0) {
         return { text: text.trim(), modelUsed: model };
       }
+      lastError = `Model ${model} returned empty text`;
     } catch (err: any) {
       const errMsg = err?.message || String(err);
       console.error(`[RazorGuard AI] Model ${model} error:`, errMsg);
+      lastError = `${model}: ${errMsg}`;
 
       const isCapacityOrQuota =
         errMsg.includes("503") ||
@@ -63,7 +66,7 @@ async function callGeminiSafely(
     }
   }
 
-  return null;
+  return null; // All models failed
 }
 
 function generateHeuristicQueryAnswer(transaction: any, userQuery: string) {
