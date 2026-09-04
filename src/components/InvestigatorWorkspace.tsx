@@ -19,7 +19,8 @@ import {
   ChevronUp,
   Clock,
   Zap,
-  Info
+  Info,
+  Download
 } from 'lucide-react';
 import { Transaction } from '../types';
 import { RazorGuardEmblem, FaviconLogo } from './RazorGuardLogo';
@@ -84,6 +85,34 @@ export const InvestigatorWorkspace: React.FC<InvestigatorWorkspaceProps> = ({
 
   const isCritical = transaction.riskTier === 'CRITICAL';
   const isElevated = transaction.riskTier === 'ELEVATED';
+
+  const [isDownloadingAudio, setIsDownloadingAudio] = useState(false);
+
+  const handleDownloadAudio = async (text: string) => {
+    setIsDownloadingAudio(true);
+    try {
+      const res = await fetch('/api/tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: text.substring(0, 3000), lang: 'en' }),
+      });
+      if (!res.ok) throw new Error('TTS failed');
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `razorguard-analysis-${Date.now()}.mp3`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Download audio failed:', err);
+      alert('Failed to generate audio. Please try again.');
+    } finally {
+      setIsDownloadingAudio(false);
+    }
+  };
 
   // Handle analyst triage buttons
   const handleAction = (status: 'HELD' | 'SAFE' | 'ESCALATED' | 'BLOCKED', label: string) => {
@@ -652,9 +681,24 @@ export const InvestigatorWorkspace: React.FC<InvestigatorWorkspaceProps> = ({
                           </span>
                         )}
                       </div>
-                      <span className="text-slate-400 font-mono text-sm">
-                        {item.timestamp}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleDownloadAudio(item.answer)}
+                          disabled={isDownloadingAudio}
+                          className="flex items-center gap-1 rounded bg-white/5 border border-white/10 px-2 py-1 text-xs text-slate-400 hover:text-emerald-400 hover:border-emerald-500/30 transition-all disabled:opacity-40"
+                          title="Download as MP3"
+                        >
+                          {isDownloadingAudio ? (
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                          ) : (
+                            <Download className="h-3 w-3" />
+                          )}
+                          <span>Audio</span>
+                        </button>
+                        <span className="text-slate-400 font-mono text-sm">
+                          {item.timestamp}
+                        </span>
+                      </div>
                     </div>
 
                     <p className="text-sm text-slate-200 leading-relaxed">
