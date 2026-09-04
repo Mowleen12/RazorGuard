@@ -15,10 +15,13 @@ export default async function handler(req: any, res: any) {
       const { GoogleGenAI } = await import("@google/genai");
       const ai = new GoogleGenAI({ apiKey });
       const response = await ai.models.generateContent({
-        model: "gemini-2.0-flash",
+        model: "gemini-3.6-flash",
         contents: "Say hello in one word",
       });
-      testResult = typeof response.text === "string" ? response.text : JSON.stringify(response).substring(0, 200);
+      let txt = "";
+      try { if (typeof response.text === "function") { txt = response.text(); } else if (typeof response.text === "string") { txt = response.text; } } catch(_){}
+      if (!txt && response.candidates?.[0]?.content?.parts?.[0]?.text) { txt = response.candidates[0].content.parts[0].text; }
+      testResult = txt || JSON.stringify(response).substring(0, 200);
     } catch (err: any) {
       testError = err?.message || String(err);
     }
